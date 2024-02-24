@@ -1,9 +1,10 @@
-pub fn echo(args: Vec<&String>) {
+use std::error::Error;
+
+pub fn echo(args: Vec<&String>) -> Result<(), Box<dyn Error>> {
     let args_size = args.len();
 
     if args_size < 1 {
-        println!("Echo: at least 1 argument must be provided!");
-        return;
+        return Err("Echo: at least 1 argument must be provided!")?;
     }
     
     for (i, arg) in args.iter().enumerate() {
@@ -14,4 +15,6 @@ pub fn echo(args: Vec<&String>) {
 
         print!("{}", arg);
     }
+
+    Ok(())
 }
