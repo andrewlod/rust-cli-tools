@@ -1,8 +1,8 @@
-use std::fs;
-use std::thread;
-use std::sync::Arc;
-use std::io;
 use std::error;
+use std::fs;
+use std::io;
+use std::sync::Arc;
+use std::thread;
 
 fn find_recursive(path: Arc<str>, file: Arc<str>) -> Result<(), Box<io::Error>> {
     let path_ref = path.as_ref();
@@ -17,10 +17,15 @@ fn find_recursive(path: Arc<str>, file: Arc<str>) -> Result<(), Box<io::Error>> 
 
         let obj_name = match obj.file_name().into_string() {
             Ok(v) => v,
-            Err(_e) => return Err(io::Error::new(io::ErrorKind::Unsupported, "Something went wrong while converting object name to UTF-8 string!"))?
+            Err(_e) => {
+                return Err(io::Error::new(
+                    io::ErrorKind::Unsupported,
+                    "Something went wrong while converting object name to UTF-8 string!",
+                ))?
+            }
         };
 
-        if obj_name == file_ref.to_string() {
+        if obj_name == file_ref {
             println!("{}/{}", path_ref, file_ref);
             return Ok(());
         }
@@ -36,8 +41,8 @@ fn find_recursive(path: Arc<str>, file: Arc<str>) -> Result<(), Box<io::Error>> 
                 let new_path_ptr: Arc<str> = Arc::from(new_path.as_str());
 
                 match find_recursive(new_path_ptr, file_ref_clone) {
-                    Ok(v) => return Ok(v),
-                    Err(e) => return Err(e)
+                    Ok(v) => Ok(v),
+                    Err(e) => Err(e),
                 }
             });
 
