@@ -90,3 +90,23 @@ macro_rules! find {
         find::find_stdout($path, $file)
     };
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_find() {
+        let output_ptr = Arc::new(Mutex::new(Vec::new()));
+        find!(".", "test_file.txt", Arc::clone(&output_ptr)).expect("Command failed!");
+
+        let output = match output_ptr.lock() {
+            Ok(v) => v,
+            Err(e) => panic!("{}", e),
+        };
+        let output_value = String::from_utf8(output.to_vec()).expect("Failed to convert to UTF-8!");
+        let expected_value = "./assets/test_file.txt\n";
+
+        assert_eq!(output_value, expected_value);
+    }
+}
