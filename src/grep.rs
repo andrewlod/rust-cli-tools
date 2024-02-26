@@ -34,3 +34,22 @@ macro_rules! grep {
         grep::grep($pattern, $file, io::stdout())
     };
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_grep() {
+        let mut output = Vec::new();
+        grep!("and", "assets/test_file.txt", &mut output).expect("Command failed!");
+
+        let output = String::from_utf8(output).expect("Failed to convert to UTF-8!");
+        let expected_value = "The stained glass window had slivers of yellow, orange, and red.
+My mom made a milkshake with frozen bananas and chocolate sauce.
+It is illegal to buy and sell tigers and other big cats in the United States.
+";
+
+        assert_eq!(output, expected_value);
+    }
+}
