@@ -31,7 +31,16 @@ fn find_recursive<W: io::Write + Send + 'static>(
         };
 
         if obj_name == file_ref {
-            let mut out_lock = out.lock().unwrap();
+            let mut out_lock = match out.lock() {
+                Ok(v) => v,
+                Err(_e) => {
+                    return Err(Box::new(io::Error::new(
+                        io::ErrorKind::Other,
+                        "Something went wrong while locking the output mutex!",
+                    )))
+                }
+            };
+
             writeln!(&mut out_lock, "{}/{}", path_ref, file_ref)?;
             return Ok(());
         }

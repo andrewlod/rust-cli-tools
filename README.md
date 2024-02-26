@@ -36,7 +36,7 @@ cargo test
 
 ## WIP
 The following features are work-in-progress(WIP). Priority is sorted in descending order, where items on top of the list are the most important ones:
-- Remove `.unwrap()` instances from `grep.rs`
+- N/A
 
 ## Authors
 - André Wlodkovski - [@andrewlod](https://github.com/andrewlod)
