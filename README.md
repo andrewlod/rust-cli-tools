@@ -28,13 +28,15 @@ The following command runs the project:
 cargo run <unix_command> [...args]
 ```
 
-## Running tests [WIP]
-Running tests is a work-in-progress.
+## Running tests
+The following comand runs all unit tests:
+```sh
+cargo test
+```
 
 ## WIP
 The following features are work-in-progress(WIP). Priority is sorted in descending order, where items on top of the list are the most important ones:
-- Unit testing for each command
-- CI with GitHub Actions
+- Remove `.unwrap()` instances from `grep.rs`
 
 ## Authors
 - André Wlodkovski - [@andrewlod](https://github.com/andrewlod)
