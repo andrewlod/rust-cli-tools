@@ -1,9 +1,9 @@
 use std::error::Error;
 use std::{fs, io};
 
-pub fn cat(args: Vec<&String>, mut out: impl io::Write) -> Result<(), Box<dyn Error>> {
+pub fn cat<S: AsRef<str>>(args: Vec<S>, mut out: impl io::Write) -> Result<(), Box<dyn Error>> {
     for path in args {
-        let file_content = fs::read_to_string(path)?;
+        let file_content = fs::read_to_string(path.as_ref())?;
 
         writeln!(&mut out, "{}", file_content)?;
     }
@@ -27,8 +27,7 @@ mod tests {
     #[test]
     fn test_cat() {
         let mut output = Vec::new();
-        let arg = String::from("assets/test_file.txt");
-        let args: Vec<&String> = vec![&arg];
+        let args = vec!["assets/test_file.txt"];
         cat!(args, &mut output).expect("Command failed!");
 
         let output = String::from_utf8(output).expect("Failed to convert to UTF-8!");
