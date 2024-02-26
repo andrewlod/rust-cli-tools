@@ -1,10 +1,15 @@
-use std::error::Error;
+use std::{error::Error, io};
 
-mod echo;
+#[macro_use]
 mod cat;
-mod ls;
+#[macro_use]
+mod echo;
+#[macro_use]
 mod find;
+#[macro_use]
 mod grep;
+#[macro_use]
+mod ls;
 
 fn invalid_option<S: AsRef<str>>(option: S) -> Result<(), Box<dyn Error>> {
     let message = &format!("Invalid option: {}", option.as_ref());
@@ -21,20 +26,19 @@ fn main() {
     let choice = &args[1];
 
     let result = match choice.as_str() {
-        "echo" => echo::echo(args.iter().skip(2).collect()),
-        "cat" => cat::cat(args.iter().skip(2).collect()),
-        "ls" => ls::ls(match args.len() {
+        "echo" => echo!(args.iter().skip(2).collect()),
+        "cat" => cat!(args.iter().skip(2).collect()),
+        "ls" => ls!(match args.len() {
             2 => ".",
-            _ => &args[2]
+            _ => &args[2],
         }),
-        "find" => find::find(&args[2], &args[3]),
-        "grep" => grep::grep(&args[2], &args[3]),
-        x => invalid_option(x)
+        "find" => find!(&args[2], &args[3]),
+        "grep" => grep!(&args[2], &args[3]),
+        x => invalid_option(x),
     };
 
     match result {
         Err(e) => println!("The following error has occurred: {}", e),
-        Ok(_v) => println!("Execution successful!")
+        Ok(_v) => println!("Execution successful!"),
     }
-
 }

@@ -1,7 +1,7 @@
-use std::fs;
 use std::error::Error;
+use std::{fs, io};
 
-pub fn ls<S: AsRef<str>>(path: S) -> Result<(), Box<dyn Error>> {
+pub fn ls<S: AsRef<str>>(path: S, mut out: impl io::Write) -> Result<(), Box<dyn Error>> {
     let paths = fs::read_dir(path.as_ref())?;
 
     for path_result in paths {
@@ -9,11 +9,22 @@ pub fn ls<S: AsRef<str>>(path: S) -> Result<(), Box<dyn Error>> {
 
         let dir_name = match dir.file_name().into_string() {
             Ok(v) => v,
-            Err(_e) => return Err("Something went wrong while converting object name to UTF-8 string!")?
+            Err(_e) => {
+                return Err("Something went wrong while converting object name to UTF-8 string!")?
+            }
         };
 
-        println!("{}", dir_name);
+        writeln!(&mut out, "{}", dir_name)?;
     }
 
     Ok(())
+}
+
+macro_rules! ls {
+    ($path:expr, $out:expr) => {
+        ls($pathfile, $out)
+    };
+    ($path:expr) => {
+        ls::ls($path, io::stdout())
+    };
 }

@@ -1,6 +1,6 @@
-use std::error::Error;
+use std::{error::Error, io};
 
-pub fn echo(args: Vec<&String>) -> Result<(), Box<dyn Error>> {
+pub fn echo(args: Vec<&String>, mut out: impl io::Write) -> Result<(), Box<dyn Error>> {
     let args_size = args.len();
 
     if args_size < 1 {
@@ -9,12 +9,21 @@ pub fn echo(args: Vec<&String>) -> Result<(), Box<dyn Error>> {
 
     for (i, arg) in args.iter().enumerate() {
         if i < args_size - 1 {
-            print!("{} ", arg);
+            write!(&mut out, "{} ", arg)?;
             continue;
         }
 
-        print!("{}", arg);
+        write!(&mut out, "{}", arg)?;
     }
 
     Ok(())
+}
+
+macro_rules! echo {
+    ($args:expr, $out:expr) => {
+        echo($args, $out)
+    };
+    ($args:expr) => {
+        echo::echo($args, io::stdout())
+    };
 }

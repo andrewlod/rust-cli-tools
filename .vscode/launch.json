@@ -19,7 +19,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["grep", "of", "assets/test_file.txt"],
+            "args": ["find", ".", "output"],
             "cwd": "${workspaceFolder}"
         },
         {

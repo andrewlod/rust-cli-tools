@@ -2,9 +2,14 @@ use std::error;
 use std::fs;
 use std::io;
 use std::sync::Arc;
+use std::sync::Mutex;
 use std::thread;
 
-fn find_recursive(path: Arc<str>, file: Arc<str>) -> Result<(), Box<io::Error>> {
+fn find_recursive<W: io::Write + Send + 'static>(
+    path: Arc<str>,
+    file: Arc<str>,
+    out: Arc<Mutex<W>>,
+) -> Result<(), Box<io::Error>> {
     let path_ref = path.as_ref();
     let file_ref = file.as_ref();
 
@@ -26,7 +31,8 @@ fn find_recursive(path: Arc<str>, file: Arc<str>) -> Result<(), Box<io::Error>> 
         };
 
         if obj_name == file_ref {
-            println!("{}/{}", path_ref, file_ref);
+            let mut out_lock = out.lock().unwrap();
+            writeln!(&mut out_lock, "{}/{}", path_ref, file_ref)?;
             return Ok(());
         }
 
@@ -35,12 +41,13 @@ fn find_recursive(path: Arc<str>, file: Arc<str>) -> Result<(), Box<io::Error>> 
         if obj_type.is_dir() {
             let path_ref_clone = Arc::clone(&path);
             let file_ref_clone = Arc::clone(&file);
+            let out_clone = Arc::clone(&out);
 
             let handle = thread::spawn(move || -> Result<(), Box<io::Error>> {
                 let new_path = &format!("{}/{}", path_ref_clone, obj_name);
                 let new_path_ptr: Arc<str> = Arc::from(new_path.as_str());
 
-                match find_recursive(new_path_ptr, file_ref_clone) {
+                match find_recursive(new_path_ptr, file_ref_clone, out_clone) {
                     Ok(v) => Ok(v),
                     Err(e) => Err(e),
                 }
@@ -57,11 +64,29 @@ fn find_recursive(path: Arc<str>, file: Arc<str>) -> Result<(), Box<io::Error>> 
     Ok(())
 }
 
-pub fn find<S: AsRef<str>>(path: S, file: S) -> Result<(), Box<dyn error::Error>> {
+pub fn find<S: AsRef<str>, W: io::Write + Send + 'static>(
+    path: S,
+    file: S,
+    out: Arc<Mutex<W>>,
+) -> Result<(), Box<dyn error::Error>> {
     let path_ptr: Arc<str> = Arc::from(path.as_ref());
     let file_ptr: Arc<str> = Arc::from(file.as_ref());
 
-    find_recursive(path_ptr, file_ptr)?;
+    find_recursive(path_ptr, file_ptr, out)?;
 
     Ok(())
+}
+
+pub fn find_stdout<S: AsRef<str>>(path: S, file: S) -> Result<(), Box<dyn error::Error>> {
+    let out = Arc::new(Mutex::new(io::stdout()));
+    find(path, file, out)
+}
+
+macro_rules! find {
+    ($path:expr, $file:expr, $out:expr) => {
+        find($path, $file, $out)
+    };
+    ($path:expr, $file:expr) => {
+        find::find_stdout($path, $file)
+    };
 }
